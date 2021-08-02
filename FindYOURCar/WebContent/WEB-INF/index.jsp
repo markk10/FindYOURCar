@@ -55,33 +55,37 @@
 		
 		<hr>
 
-		<c:if test="${ resultingBooks != null }">
-			<c:forEach var="resultingBooks" items="${ resultingBooks }" varStatus="loop">
+		<c:if test="${ resultingCars != null }">
+			<c:forEach var="resultingCars" items="${ resultingCars }" varStatus="loop">
 
 				<table class="table table-bordered table-hover">
 					<tr>
 						<td><b>Rank ${ loop.count }</b></td>
-						<td>Similarity: ${ resultingBooks.getSimilarity() }</td>
+						<td>Similarity: ${ resultingCars.getSimilarity() }</td>
 					</tr>
 					<tr>
-						<td>Title:</td>
-						<td>${ resultingBooks.getTitle() }</td>
+						<td>Marke:</td>
+						<td>${ resultingCars.getMarke() }</td>
 					</tr>
 					<tr>
-						<td>Year:</td>
-						<td>${ resultingBooks.getYear() }</td>
+						<td>Modell:</td>
+						<td>${ resultingCars.getModell() }</td>
 					</tr>
 					<tr>
-						<td>Category:</td>
-						<td>${ resultingBooks.getCategory() }</td>
+						<td>Preis:</td>
+						<td>${ resultingCars.getPreis() }</td>
 					</tr>
 					<tr>
-						<td>Author:</td>
-						<td>${ resultingBooks.getAuthor() }</td>
+						<td>Hubraum:</td>
+						<td>${ resultingCars.getHubraum() }</td>
 					</tr>
 					<tr>
-						<td>Award:</td>
-						<td>${ resultingBooks.isAwarded() }</td>
+						<td>PS:</td>
+						<td>${ resultingCars.getPs() }</td>
+					</tr>
+					<tr>
+						<td>Kraftstoff:</td>
+						<td>${ resultingCars.getKraftstoff() }</td>
 					</tr>
 				</table>
 			</c:forEach>
