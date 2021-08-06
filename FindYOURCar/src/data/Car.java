@@ -1,16 +1,7 @@
 package data;
 
 public class Car {
-
-	public Car(String marke, String modell, int preis, int hubraum, int ps, String kraftstoff) {
-		this.marke = marke;
-		this.modell = modell;
-		this.preis = preis;
-		this.hubraum = hubraum;
-		this.ps = ps;
-		this.kraftstoff = kraftstoff;
-	}
-
+	
 	private String marke;
 	private String modell;
 	private int preis;
@@ -19,6 +10,14 @@ public class Car {
 	private String kraftstoff;
 	private double similarity; 
 	
+	public Car(String marke, String modell, int preis, int hubraum, int ps, String kraftstoff) {
+		this.marke = marke;
+		this.modell = modell;
+		this.preis = preis;
+		this.hubraum = hubraum;
+		this.ps = ps;
+		this.kraftstoff = kraftstoff;
+	}
 
 	public double getSimilarity() {
 		return similarity;

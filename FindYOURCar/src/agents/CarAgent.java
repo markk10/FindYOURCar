@@ -1,5 +1,6 @@
 package agents;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,7 @@ import de.dfki.mycbr.util.Pair;
 public class CarAgent {
 	
 	private static String dataPath = "D:\\";
+	private static String dataPath_Alfred = "C:\\Users\\User\\git\\FindYOURCar\\FindYOURCar\\";
 	private static String projectName = "FindyourCar.prj";
 	
 	// Attributes for myCBR
@@ -45,6 +47,17 @@ public class CarAgent {
 	private IntegerDesc psDesc;
 	private StringDesc kraftstoffDesc;
 	
+	//Mindest-/Höchstwerte
+	private int minPreis = 0;
+	private int maxPreis = 1000000;
+	
+	private int minHubraum = 0;
+	private int maxHubraum = 10000;
+	
+	private int minPS = 0;
+	private int maxPS = 2000;
+	
+	
 	
 	public CarAgent() {
 		initProject();
@@ -53,6 +66,7 @@ public class CarAgent {
 	
 	private void initProject() {
 		try {
+			
 			// Start in modeling view
 			project = new Project();
 			project.setName("FindyourCar");
@@ -93,7 +107,7 @@ public class CarAgent {
 			*/
 			
 			// == Integer
-			preisDesc = new IntegerDesc(carConcept, "Preis", 0, 2100);
+			preisDesc = new IntegerDesc(carConcept, "Preis", minPreis, maxPreis);
 			IntegerFct preisFct = preisDesc.addIntegerFct("preisFct", true);
 			preisFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			preisFct.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
@@ -101,7 +115,7 @@ public class CarAgent {
 			preisFct.setFunctionParameterL(2);
 			carGlobalSim.setWeight("Preis", 4);
 			
-			hubraumDesc = new IntegerDesc(carConcept, "Hubraum", 0, 2100);
+			hubraumDesc = new IntegerDesc(carConcept, "Hubraum", minHubraum, maxHubraum);
 			IntegerFct hubraumFct = preisDesc.addIntegerFct("hubraumFct", true);
 			hubraumFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			hubraumFct.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
@@ -109,7 +123,7 @@ public class CarAgent {
 			hubraumFct.setFunctionParameterL(2);
 			carGlobalSim.setWeight("Hubraum", 4);
 			
-			psDesc = new IntegerDesc(carConcept, "Ps", 0, 2100);
+			psDesc = new IntegerDesc(carConcept, "Ps", minPS, maxPS);
 			IntegerFct psFct = preisDesc.addIntegerFct("psFct", true);
 			psFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			psFct.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
@@ -134,7 +148,7 @@ public class CarAgent {
 			casebase = project.createDefaultCB("Casebase");
 			System.out.println("[DEBUG] Initialize case base...");
 			addCases();
-			XMLExporter.save(project, dataPath + projectName);
+			XMLExporter.save(project, dataPath_Alfred + projectName);
 		} catch (Exception e) {
 			System.err.println("[ERROR] CarAgent: Projectpath not found."
 					+ " Possible reason: Do you have permission to write at given path?");
@@ -149,27 +163,30 @@ public class CarAgent {
 			instance.addAttribute(preisDesc, 20000);
 			instance.addAttribute(hubraumDesc, 2500);
 			instance.addAttribute(psDesc, 150);
+			instance.addAttribute(kraftstoffDesc, "Benzin");
 			casebase.addCase(instance);
 			
-			Instance instance1 = carConcept.addInstance("Car 2");
+			instance = carConcept.addInstance("Car 2");
 			instance.addAttribute(markeDesc, "BMW");
 			instance.addAttribute(modellDesc, "X6");
 			instance.addAttribute(preisDesc, 60000);
 			instance.addAttribute(hubraumDesc, 5500);
 			instance.addAttribute(psDesc, 250);
-			casebase.addCase(instance1);
+			instance.addAttribute(kraftstoffDesc, "Diesel");
+			casebase.addCase(instance);
 			
-			Instance instance2 = carConcept.addInstance("Car 3");
+			instance = carConcept.addInstance("Car 3");
 			instance.addAttribute(markeDesc, "Audi");
 			instance.addAttribute(modellDesc, "A8");
 			instance.addAttribute(preisDesc, 50000);
 			instance.addAttribute(hubraumDesc, 3500);
 			instance.addAttribute(psDesc, 220);
-			casebase.addCase(instance2);
+			instance.addAttribute(kraftstoffDesc, "Diesel");
+			casebase.addCase(instance);
 			
 			
 		} catch (Exception e) {
-			System.err.println("[DEBUG] CarCBR.java: Fehler beim Hinzufï¿½gen der Fï¿½lle.");
+			System.err.println("[DEBUG] CarCBR.java: Fehler beim Hinzufügen der Fälle.");
 			e.printStackTrace();
 		}
 	}
@@ -190,6 +207,7 @@ public class CarAgent {
 			Instance query = retrieve.getQueryInstance();
 			query.addAttribute(markeDesc, markeDesc.getAttribute(car.getMarke()));
 			query.addAttribute(modellDesc, modellDesc.getAttribute(car.getModell()));
+			// Integer Werte sind unkown
 			query.addAttribute(preisDesc, preisDesc.getAttribute(car.getPreis()));
 			query.addAttribute(hubraumDesc, hubraumDesc.getAttribute(car.getHubraum()));
 			query.addAttribute(psDesc, psDesc.getAttribute(car.getPs()));

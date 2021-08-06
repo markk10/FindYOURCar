@@ -22,6 +22,8 @@ public class CarServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	List<Pair<Instance, Similarity>> result;
 	ArrayList<Car> resultingCars; 
+	
+	private int anzahlAngezeigterAutos = 3;
        
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// Get parameters from the formular on index.jsp
@@ -39,8 +41,8 @@ public class CarServlet extends HttpServlet {
 			Car queryCar = new Car(inputMarke, inputModell, inputPreisParsed, inputHubraumParsed, inputPsParsed, inputKraftstoff); 
 			CarAgent carAgent = new CarAgent(); 
 			result = carAgent.startQuery(queryCar); 
-			resultingCars = carAgent.print(result, 5);
-			request.setAttribute("resultingBooks", resultingCars);
+			resultingCars = carAgent.print(result, anzahlAngezeigterAutos);
+			request.setAttribute("resultingCars", resultingCars);
 			
 			// Forward parameters back to the form for usability
 			request.setAttribute("inputMarke", inputMarke);
