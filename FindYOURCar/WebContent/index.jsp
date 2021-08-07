@@ -11,9 +11,15 @@
 </head>
 <body>
 	<div class="container">
-		<h1>Daten eingeben um passendes Fahrzeug zu finden</h1>
+		<h1>Daten eingeben, um passendes Fahrzeug zu finden</h1>
 
+		<form action="EinstellungServlet" method="get" class="form-horizontal">
+			<div>
+				<button>Fallbasen löschen</button>
+			</div>
+		</form>
 		<form action="CarServlet" method="get" class="form-horizontal">
+			
 			<table>
 				<tr>
 					<td>Marke</td>

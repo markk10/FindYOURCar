@@ -62,7 +62,7 @@ public class CarServlet extends HttpServlet {
 			request.getRequestDispatcher("index.jsp").forward(request, response);
 			
 		} catch (Exception ex)  {
-			request.setAttribute("error", "[DEBUG] CarServlet.java: Type Conversion Error! Please insert a number for the year. And don't mess around with the Award Boolean!"); 
+			request.setAttribute("error", "[DEBUG] CarServlet.java: Type Conversion Error!"); 
 			System.out.println("Error: " + ex.getMessage());
 			request.getRequestDispatcher("error.jsp").forward(request, response);
 		}

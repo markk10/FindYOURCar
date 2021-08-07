@@ -3,6 +3,7 @@ package agents;
 import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.catalina.valves.CrawlerSessionManagerValve;
@@ -25,6 +26,7 @@ import de.dfki.mycbr.core.similarity.SymbolFct;
 import de.dfki.mycbr.core.similarity.config.AmalgamationConfig;
 import de.dfki.mycbr.core.similarity.config.NumberConfig;
 import de.dfki.mycbr.core.similarity.config.StringConfig;
+import de.dfki.mycbr.io.CSVImporter;
 import de.dfki.mycbr.io.XMLExporter;
 import de.dfki.mycbr.util.Pair;
 
@@ -36,9 +38,15 @@ public class CarAgent {
 	private static String projectName = "FindYOURCar.prj";
 	private static String authors = "Mark E., Alfred H.";
 	private static String casebaseName = "Casebase";
+	private static String casebaseCSVImport = "CB_csvImport";
 	private static String topConceptName = "Car";
-
-	// Attributes for myCBR
+	
+	// set the separators that are used in the csv file
+	private static String csv = "Cars_Import.csv";
+	private static String columnseparator = ";";
+	private static String multiplevalueseparator = ",";
+		
+	// For myCBR
 	private Project project;
 	private Concept carConcept;
 	private ICaseBase casebase;
@@ -53,13 +61,11 @@ public class CarAgent {
 	private IntegerDesc psDesc;
 	private StringDesc kraftstoffDesc;
 
-	//Mindest-/Höchstwerte
+	//Mindest-/Höchstwerte von Attributen
 	private int minPreis = 0;
 	private int maxPreis = 1000000;
-
 	private int minHubraum = 0;
 	private int maxHubraum = 10000;
-
 	private int minPS = 0;
 	private int maxPS = 2000;
 
@@ -74,6 +80,8 @@ public class CarAgent {
 		try {
 			project = new Project(dataPath_Alfred + projectName);
 			carConcept = project.getConceptByID(topConceptName);
+			
+			System.err.println("[SHOW] CarAgent: All Attr Desc: " + carConcept.getAllAttributeDescs());
 		} catch (Exception e) {
 			System.err.println("[ERROR] CarAgent: Projekt '" + projectName + "' wurde nicht geladen!");
 			e.printStackTrace();
@@ -104,7 +112,6 @@ public class CarAgent {
 			addCases();
 			XMLExporter.save(project, dataPath_Alfred + projectName);
 			System.out.println("Das Projekt '" + projectName + "' wurde gespeichert. In: " + project.getPath());
-
 		}
 	}
 	
@@ -172,13 +179,13 @@ public class CarAgent {
 			hubraumFct.setFunctionParameterL(2);
 			carGlobalSim.setWeight("Hubraum", 4);
 
-			psDesc = new IntegerDesc(carConcept, "Ps", minPS, maxPS);
+			psDesc = new IntegerDesc(carConcept, "PS", minPS, maxPS);
 			IntegerFct psFct = preisDesc.addIntegerFct("psFct", true);
 			psFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
 			psFct.setFunctionTypeR(NumberConfig.POLYNOMIAL_WITH);
 			psFct.setFunctionParameterR(2);
 			psFct.setFunctionParameterL(2);
-			carGlobalSim.setWeight("Ps", 1);
+			carGlobalSim.setWeight("PS", 1);
 			
 			/* == Booleans
 					awardDesc = new BooleanDesc(bookConcept, "Award");
@@ -192,41 +199,62 @@ public class CarAgent {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Fügt Fälle aus einer CSV-Datei hinzu.
+	 * 
+	 * @author Alfred
+	 */
 	private void addCases() {
 		try {
-			Instance instance = carConcept.addInstance("Car 1");
-			//Prüfen, ob der Fall exisitiert
-			if (casebase.containsCase("Car 1") == null) {
-				instance.addAttribute(markeDesc, "Mercedes Benz");
-				instance.addAttribute(modellDesc, "CLA");
-				instance.addAttribute(preisDesc, 20000);
-				instance.addAttribute(hubraumDesc, 2500);
-				instance.addAttribute(psDesc, 150);
-				instance.addAttribute(kraftstoffDesc, "Benzin");
-				casebase.addCase(instance);
-			}
+//			Instance instance = carConcept.addInstance("Car 1");
+//			//Prüfen, ob der Fall exisitiert
+//			if (casebase.containsCase("Car 1") == null) {
+//				instance.addAttribute(markeDesc, "Mercedes Benz");
+//				instance.addAttribute(modellDesc, "CLA");
+//				instance.addAttribute(preisDesc, 20000);
+//				instance.addAttribute(hubraumDesc, 2500);
+//				instance.addAttribute(psDesc, 150);
+//				instance.addAttribute(kraftstoffDesc, "Benzin");
+//				casebase.addCase(instance);
+//			}
+//			
+//			instance = carConcept.addInstance("Car 2");
+//			if (casebase.containsCase("Car 2") == null) {
+//				instance.addAttribute(markeDesc, "BMW");
+//				instance.addAttribute(modellDesc, "X6");
+//				instance.addAttribute(preisDesc, 60000);
+//				instance.addAttribute(hubraumDesc, 5500);
+//				instance.addAttribute(psDesc, 250);
+//				instance.addAttribute(kraftstoffDesc, "Diesel");
+//				casebase.addCase(instance);
+//			}
+//			
+//			instance = carConcept.addInstance("Car 3");
+//			if (casebase.containsCase("Car 3") == null) {
+//				instance.addAttribute(markeDesc, "Audi");
+//				instance.addAttribute(modellDesc, "A8");
+//				instance.addAttribute(preisDesc, 50000);
+//				instance.addAttribute(hubraumDesc, 3500);
+//				instance.addAttribute(psDesc, 220);
+//				instance.addAttribute(kraftstoffDesc, "Diesel");
+//				casebase.addCase(instance);
+//			}
 			
-			instance = carConcept.addInstance("Car 2");
-			if (casebase.containsCase("Car 2") == null) {
-				instance.addAttribute(markeDesc, "BMW");
-				instance.addAttribute(modellDesc, "X6");
-				instance.addAttribute(preisDesc, 60000);
-				instance.addAttribute(hubraumDesc, 5500);
-				instance.addAttribute(psDesc, 250);
-				instance.addAttribute(kraftstoffDesc, "Diesel");
-				casebase.addCase(instance);
-			}
-			
-			instance = carConcept.addInstance("Car 3");
-			if (casebase.containsCase("Car 3") == null) {
-				instance.addAttribute(markeDesc, "Audi");
-				instance.addAttribute(modellDesc, "A8");
-				instance.addAttribute(preisDesc, 50000);
-				instance.addAttribute(hubraumDesc, 3500);
-				instance.addAttribute(psDesc, 220);
-				instance.addAttribute(kraftstoffDesc, "Diesel");
-				casebase.addCase(instance);
-			}
+			CSVImporter csvImporter = new CSVImporter(dataPath_Alfred + csv, carConcept);
+//			csvImporter.setSeparator(columnseparator); // column separator
+//			csvImporter.setSeparatorMultiple(multiplevalueseparator); // multiple value separator
+
+			csvImporter.readData(); // read csv data
+			csvImporter.checkData(); // check formal validity of the data
+			csvImporter.addMissingValues(); // add missing values with default values
+			csvImporter.addMissingDescriptions(); // add default descriptions
+			// Finally to do the import of the instances of the Concept defined use:
+			csvImporter.doImport(); // Import the data into the project
+			System.out.println("[SHOW] CarAgent: CB_scvImporter Cases:" + 
+					project.getCB(casebaseCSVImport).getCases());
+			//Nicht Nötig, CSV importer speichert in CB_csvImport
+			//addCasesInCB(casebase, carConcept);
 			
 		} catch (Exception e) {
 			System.err.println("[DEBUG] CarCBR.java: Fehler beim Hinzufügen der Fälle.");
@@ -234,18 +262,38 @@ public class CarAgent {
 		}
 	}
 
+	/**
+	 * Fügt aus dem übergebendem Konzept die Instanzen in die Fallbasis ein.
+	 * 
+	 * @param myCB
+	 * @param myConcept
+	 * 
+	 * @author Alfred
+	 */
+	private void addCasesInCB(ICaseBase myCB, Concept myConcept) {
+
+		System.out.println("Casebase vor dem Import: " + myCB.getCases().size());
+		System.out.println("Casebase: " + myCB.getCases());
+		Collection<Instance> allInstances = myConcept.getAllInstances();
+		for(Instance i : allInstances) {
+			myCB.addCase(i);
+		}
+		System.out.println("Casebase nach dem Import: " + myCB.getCases().size());
+		System.out.println("Casebase: " + myCB.getCases());
+	}
 	public List<Pair<Instance, Similarity>> startQuery(Car car) {
 		// Get the values of the request
 		markeDesc = (StringDesc) this.carConcept.getAllAttributeDescs().get("Marke");
 		modellDesc = (StringDesc) this.carConcept.getAllAttributeDescs().get("Modell");
 		preisDesc = (IntegerDesc) this.carConcept.getAllAttributeDescs().get("Preis");
 		hubraumDesc = (IntegerDesc) this.carConcept.getAllAttributeDescs().get("Hubraum");
-		psDesc = (IntegerDesc) this.carConcept.getAllAttributeDescs().get("Ps");
+		psDesc = (IntegerDesc) this.carConcept.getAllAttributeDescs().get("PS");
 		kraftstoffDesc = (StringDesc) this.carConcept.getAllAttributeDescs().get("Kraftstoff");
 
 		// Insert values into query
 		try {
-			retrieve = new Retrieval(carConcept, casebase);
+			ICaseBase CB_csvImport = project.getCB(casebaseCSVImport);
+			retrieve = new Retrieval(carConcept, CB_csvImport);
 			retrieve.setRetrievalMethod(RetrievalMethod.RETRIEVE_SORTED);
 			Instance query = retrieve.getQueryInstance();
 			query.addAttribute(markeDesc, markeDesc.getAttribute(car.getMarke()));
