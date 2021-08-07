@@ -5,6 +5,8 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.catalina.valves.CrawlerSessionManagerValve;
+
 import data.Car;
 import de.dfki.mycbr.core.ICaseBase;
 import de.dfki.mycbr.core.Project;
@@ -27,53 +29,100 @@ import de.dfki.mycbr.io.XMLExporter;
 import de.dfki.mycbr.util.Pair;
 
 public class CarAgent {
-	
+
+	// Werte für die Initialisierung des Projekts
 	private static String dataPath = "D:\\";
 	private static String dataPath_Alfred = "C:\\Users\\User\\git\\FindYOURCar\\FindYOURCar\\";
-	private static String projectName = "FindyourCar.prj";
-	
+	private static String projectName = "FindYOURCar.prj";
+	private static String authors = "Mark E., Alfred H.";
+	private static String casebaseName = "Casebase";
+	private static String topConceptName = "Car";
+
 	// Attributes for myCBR
 	private Project project;
 	private Concept carConcept;
 	private ICaseBase casebase;
 	private AmalgamationFct carGlobalSim;
 	private Retrieval retrieve;
-	
-	// Attributes of our book, preparation for CBR
+
+	// Attributes of our car, preparation for CBR
 	private StringDesc markeDesc;
 	private StringDesc modellDesc;
 	private IntegerDesc preisDesc;
 	private IntegerDesc hubraumDesc;
 	private IntegerDesc psDesc;
 	private StringDesc kraftstoffDesc;
-	
+
 	//Mindest-/Höchstwerte
 	private int minPreis = 0;
 	private int maxPreis = 1000000;
-	
+
 	private int minHubraum = 0;
 	private int maxHubraum = 10000;
-	
+
 	private int minPS = 0;
 	private int maxPS = 2000;
-	
-	
-	
+
+
+
 	public CarAgent() {
 		initProject();
 		initCasebase(); 
 	}
-	
+
 	private void initProject() {
 		try {
-			
+			project = new Project(dataPath_Alfred + projectName);
+			carConcept = project.getConceptByID(topConceptName);
+		} catch (Exception e) {
+			System.err.println("[ERROR] CarAgent: Projekt '" + projectName + "' wurde nicht geladen!");
+			e.printStackTrace();
+		}
+		
+		if(project == null) {
+			createProject();
+		}
+	}
+
+	private void initCasebase() {
+		
+		casebase = project.getCB(casebaseName);
+
+		if(casebase == null) {
+			try {
+				casebase = project.createDefaultCB(casebaseName);
+				System.out.println("[DEBUG] Die Fallbasis '" + casebaseName + "' wurde erstellt.");
+				addCases();
+				XMLExporter.save(project, dataPath_Alfred + projectName);
+				System.out.println("Das Projekt '" + projectName + "' wurde gespeichert.");
+			} catch (Exception e) {
+				System.err.println("[ERROR] CarAgent: Fallbasis '" + casebaseName + "' wurde nicht erstellt!");
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("[DEBUG] Die Fallbasis '" + casebaseName + "' wird geladen...");
+			addCases();
+			XMLExporter.save(project, dataPath_Alfred + projectName);
+			System.out.println("Das Projekt '" + projectName + "' wurde gespeichert. In: " + project.getPath());
+
+		}
+	}
+	
+	/**
+	 * Erstellt das Projekt "FindYOURCar".
+	 * 
+	 * @return Das Projekt wurde erstellt.
+	 */
+	private void createProject() {
+		
+		try {
 			// Start in modeling view
 			project = new Project();
-			project.setName("FindyourCar");
-			project.setAuthor("MandA");
-			
+			project.setName(projectName);
+			project.setAuthor(authors);
+
 			// Create a new concept
-			carConcept = project.createTopConcept("Car");
+			carConcept = project.createTopConcept(topConceptName);
 
 			// Define the global similarities
 			carGlobalSim = carConcept.addAmalgamationFct(AmalgamationConfig.WEIGHTED_SUM, "carSimFct", true);
@@ -82,30 +131,30 @@ public class CarAgent {
 			markeDesc = new StringDesc(carConcept, "Marke");
 			markeDesc.addStringFct(StringConfig.LEVENSHTEIN, "markeFct", true);
 			carGlobalSim.setWeight("Marke", 7);
-			
+
 			modellDesc = new StringDesc(carConcept, "Modell");
 			modellDesc.addStringFct(StringConfig.LEVENSHTEIN, "modellFct", true);
 			carGlobalSim.setWeight("Modell", 7);
-			
+
 			kraftstoffDesc = new StringDesc(carConcept, "Kraftstoff");
 			kraftstoffDesc.addStringFct(StringConfig.LEVENSHTEIN, "kraftstoffFct", true);
 			carGlobalSim.setWeight("Kraftstoff", 3);
 
 			/* == Symbols
-			categoryDesc = new SymbolDesc(bookConcept, "Category", null);
-			categoryDesc.addSymbol("Drama"); 
-			categoryDesc.addSymbol("Comedy"); 
-			categoryDesc.addSymbol("Thriller"); 
-			SymbolFct categoryFct = categoryDesc.addSymbolFct("categoryFct", true);
-			categoryFct.setSimilarity("Comedy", "Drama", 0.40);
-			categoryFct.setSimilarity("Comedy", "Thriller", 0.20);
-			categoryFct.setSimilarity("Drama", "Comedy", 0.40);
-			categoryFct.setSimilarity("Drama", "Thriller", 0.75);
-			categoryFct.setSimilarity("Thriller", "Comedy", 0.20);
-			categoryFct.setSimilarity("Thriller", "Drama", 0.75);
-			bookGlobalSim.setWeight("Category", 4);
-			*/
-			
+					categoryDesc = new SymbolDesc(bookConcept, "Category", null);
+					categoryDesc.addSymbol("Drama"); 
+					categoryDesc.addSymbol("Comedy"); 
+					categoryDesc.addSymbol("Thriller"); 
+					SymbolFct categoryFct = categoryDesc.addSymbolFct("categoryFct", true);
+					categoryFct.setSimilarity("Comedy", "Drama", 0.40);
+					categoryFct.setSimilarity("Comedy", "Thriller", 0.20);
+					categoryFct.setSimilarity("Drama", "Comedy", 0.40);
+					categoryFct.setSimilarity("Drama", "Thriller", 0.75);
+					categoryFct.setSimilarity("Thriller", "Comedy", 0.20);
+					categoryFct.setSimilarity("Thriller", "Drama", 0.75);
+					bookGlobalSim.setWeight("Category", 4);
+			 */
+
 			// == Integer
 			preisDesc = new IntegerDesc(carConcept, "Preis", minPreis, maxPreis);
 			IntegerFct preisFct = preisDesc.addIntegerFct("preisFct", true);
@@ -114,7 +163,7 @@ public class CarAgent {
 			preisFct.setFunctionParameterR(2);
 			preisFct.setFunctionParameterL(2);
 			carGlobalSim.setWeight("Preis", 4);
-			
+
 			hubraumDesc = new IntegerDesc(carConcept, "Hubraum", minHubraum, maxHubraum);
 			IntegerFct hubraumFct = preisDesc.addIntegerFct("hubraumFct", true);
 			hubraumFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
@@ -122,7 +171,7 @@ public class CarAgent {
 			hubraumFct.setFunctionParameterR(2);
 			hubraumFct.setFunctionParameterL(2);
 			carGlobalSim.setWeight("Hubraum", 4);
-			
+
 			psDesc = new IntegerDesc(carConcept, "Ps", minPS, maxPS);
 			IntegerFct psFct = preisDesc.addIntegerFct("psFct", true);
 			psFct.setFunctionTypeL(NumberConfig.POLYNOMIAL_WITH);
@@ -132,58 +181,52 @@ public class CarAgent {
 			carGlobalSim.setWeight("Ps", 1);
 			
 			/* == Booleans
-			awardDesc = new BooleanDesc(bookConcept, "Award");
-			awardDesc.addBooleanFct("awardDesc", true);
-			bookGlobalSim.setWeight("Award", 1);
-			*/
-
+					awardDesc = new BooleanDesc(bookConcept, "Award");
+					awardDesc.addBooleanFct("awardDesc", true);
+					bookGlobalSim.setWeight("Award", 1);
+			 */
+			System.out.println("Das Projekt: '" + projectName + "' wurde neu erstellt!");
+			
 		} catch (Exception e) {
-			System.err.println("[ERROR] CarAgent: Project could not be created." + e.getMessage());
-			System.out.println(e.getMessage());
+			System.err.println("[ERROR] CarAgent: Das Projekt konnte nicht erstellt werden.");
+			e.printStackTrace();
 		}
 	}
-	
-	private void initCasebase() {
-		try {
-			casebase = project.createDefaultCB("Casebase");
-			System.out.println("[DEBUG] Initialize case base...");
-			addCases();
-			XMLExporter.save(project, dataPath_Alfred + projectName);
-		} catch (Exception e) {
-			System.err.println("[ERROR] CarAgent: Projectpath not found."
-					+ " Possible reason: Do you have permission to write at given path?");
-		}
-	}
-	
 	private void addCases() {
 		try {
 			Instance instance = carConcept.addInstance("Car 1");
-			instance.addAttribute(markeDesc, "Mercedes Benz");
-			instance.addAttribute(modellDesc, "CLA");
-			instance.addAttribute(preisDesc, 20000);
-			instance.addAttribute(hubraumDesc, 2500);
-			instance.addAttribute(psDesc, 150);
-			instance.addAttribute(kraftstoffDesc, "Benzin");
-			casebase.addCase(instance);
+			//Prüfen, ob der Fall exisitiert
+			if (casebase.containsCase("Car 1") == null) {
+				instance.addAttribute(markeDesc, "Mercedes Benz");
+				instance.addAttribute(modellDesc, "CLA");
+				instance.addAttribute(preisDesc, 20000);
+				instance.addAttribute(hubraumDesc, 2500);
+				instance.addAttribute(psDesc, 150);
+				instance.addAttribute(kraftstoffDesc, "Benzin");
+				casebase.addCase(instance);
+			}
 			
 			instance = carConcept.addInstance("Car 2");
-			instance.addAttribute(markeDesc, "BMW");
-			instance.addAttribute(modellDesc, "X6");
-			instance.addAttribute(preisDesc, 60000);
-			instance.addAttribute(hubraumDesc, 5500);
-			instance.addAttribute(psDesc, 250);
-			instance.addAttribute(kraftstoffDesc, "Diesel");
-			casebase.addCase(instance);
+			if (casebase.containsCase("Car 2") == null) {
+				instance.addAttribute(markeDesc, "BMW");
+				instance.addAttribute(modellDesc, "X6");
+				instance.addAttribute(preisDesc, 60000);
+				instance.addAttribute(hubraumDesc, 5500);
+				instance.addAttribute(psDesc, 250);
+				instance.addAttribute(kraftstoffDesc, "Diesel");
+				casebase.addCase(instance);
+			}
 			
 			instance = carConcept.addInstance("Car 3");
-			instance.addAttribute(markeDesc, "Audi");
-			instance.addAttribute(modellDesc, "A8");
-			instance.addAttribute(preisDesc, 50000);
-			instance.addAttribute(hubraumDesc, 3500);
-			instance.addAttribute(psDesc, 220);
-			instance.addAttribute(kraftstoffDesc, "Diesel");
-			casebase.addCase(instance);
-			
+			if (casebase.containsCase("Car 3") == null) {
+				instance.addAttribute(markeDesc, "Audi");
+				instance.addAttribute(modellDesc, "A8");
+				instance.addAttribute(preisDesc, 50000);
+				instance.addAttribute(hubraumDesc, 3500);
+				instance.addAttribute(psDesc, 220);
+				instance.addAttribute(kraftstoffDesc, "Diesel");
+				casebase.addCase(instance);
+			}
 			
 		} catch (Exception e) {
 			System.err.println("[DEBUG] CarCBR.java: Fehler beim Hinzufügen der Fälle.");
@@ -215,7 +258,7 @@ public class CarAgent {
 		} catch (ParseException e) {
 			System.err.println("[ERROR] CarAgent: Error while creating the query! " + e.getMessage());
 		}
-		
+
 		// Send query
 		retrieve.start();
 		System.out.println("[DEBUG] CarAgent: Query successful!");
@@ -237,7 +280,7 @@ public class CarAgent {
 					Integer.parseInt(obj.getAttForDesc(psDesc).getValueAsString()),
 					obj.getAttForDesc(kraftstoffDesc).getValueAsString()
 					);
-			
+
 			resultingCars.add(car);
 			resultingCars.get(i).setSimilarity(result.get(i).getSecond().getValue());
 			System.out.println(result.get(i).getFirst().getName() + " - Similarity: "
