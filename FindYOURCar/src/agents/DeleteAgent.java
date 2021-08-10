@@ -1,5 +1,7 @@
 package agents;
 
+import java.util.Collection;
+
 import de.dfki.mycbr.core.ICaseBase;
 import de.dfki.mycbr.core.Project;
 import de.dfki.mycbr.core.casebase.Instance;
@@ -33,6 +35,27 @@ public class DeleteAgent {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * Leert eine bestimmte Fallbasis.
+	 * 
+	 * @author Alfred
+	 */
+	public void deleteCasebase(String casebaseName) {
+
+//		casebase = project.getCB(casebaseName);
+//		System.out.println("[SAVE]: " + casebaseName + "-Fälle vorm Löschen: " + casebase.getCases().size());
+//		casebase = project.deleteCaseBase(casebaseName);
+//		Collection<Instance> x = casebase.getCases();
+		casebase = project.deleteCaseBase(casebaseName);
+		System.out.println("[SHOW]: " + casebaseName + "-Fälle nachm Löschen: " + casebase.getCases().size());
+		
+		XMLExporter.save(project, dataPath_Alfred + projectName);
+		System.out.println("[SAVE]: Projekt gespeichert.");
+	}
+	
+	
+	
 	/**
 	 * Löscht alle Fallbasen des Projekts:
 	 * <li>Casebase

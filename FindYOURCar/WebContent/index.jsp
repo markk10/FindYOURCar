@@ -30,7 +30,7 @@
 					<td><input name="modell" placeholder="Modell" value=${ inputModell }></td>
 				</tr>
 				<tr>
-					<td>Preisklasse</td>
+					<td>Preisklasse</td> 
 					<td><select name="preis" size="3">
 							<option>5000</option>
 							<option>10000</option>
